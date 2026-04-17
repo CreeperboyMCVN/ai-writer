@@ -37,7 +37,7 @@ A modern, elegant story writing application built with Next.js 16, React 19, and
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/CreeperboyMCVN/ai-writer
 cd ai-writer
 ```
 
