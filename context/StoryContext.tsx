@@ -46,6 +46,14 @@ interface StoryContextProps {
   // Master Loader
   loadWorkspace: (data: any) => void;
   workspaceVersion: number;
+
+  // Model Selection
+  selectedModel: any;
+  setSelectedModel: (model: any) => void;
+
+  // Generation Metrics
+  lastGenerationMetrics: { tokens: number; duration: number } | null;
+  setLastGenerationMetrics: (metrics: { tokens: number; duration: number } | null) => void;
 }
 
 const StoryContext = createContext<StoryContextProps | undefined>(undefined);
@@ -70,6 +78,9 @@ export function StoryProvider({ children }: { children: React.ReactNode }) {
 
   const [aiMode, setAiMode] = useState(true);
   const [supportResponse, setSupportResponse] = useState("");
+
+  const [selectedModel, setSelectedModel] = useState<any>(null);
+  const [lastGenerationMetrics, setLastGenerationMetrics] = useState<{ tokens: number; duration: number } | null>(null);
 
   const addEntity = (entity: Omit<StoryDatabaseEntity, 'id'>) => {
     const newEntity = { ...entity, id: Math.random().toString(36).substring(2, 9) };
@@ -148,7 +159,9 @@ export function StoryProvider({ children }: { children: React.ReactNode }) {
       storySummary, setStorySummary, lastSummarizedChapterId, setLastSummarizedChapterId,
       aiMode, setAiMode,
       supportResponse, setSupportResponse,
-      loadWorkspace, workspaceVersion
+      loadWorkspace, workspaceVersion,
+      selectedModel, setSelectedModel,
+      lastGenerationMetrics, setLastGenerationMetrics
     }}>
       {children}
     </StoryContext.Provider>

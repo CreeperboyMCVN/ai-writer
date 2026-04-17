@@ -11,7 +11,6 @@ import { useStory } from '@/context/StoryContext';
 import { Save, Upload } from 'lucide-react';
 
 export default function Editor() {
-  const [model, setModel] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
 
@@ -30,7 +29,9 @@ export default function Editor() {
     setSupportResponse,
     storySummary, setStorySummary,
     lastSummarizedChapterId, setLastSummarizedChapterId,
-    loadWorkspace, workspaceVersion
+    loadWorkspace, workspaceVersion,
+    selectedModel,
+    setLastGenerationMetrics
   } = useStory();
 
   const currentChapter = chapters.find(c => c.id === activeChapterId);
@@ -126,7 +127,7 @@ export default function Editor() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model,
+          model: selectedModel?.name,
           existingSummary: storySummary,
           newChaptersText: textPayload,
           storyName,
@@ -170,7 +171,7 @@ export default function Editor() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model,
+          model: selectedModel?.name,
           prompt: fullText,
           customPrompt: "CRITIQUE MODE: Please provide a deep, constructive critique of the chapter text. Analyze character voice, pacing, prose flow, and dialogue. Highlight what works well, and boldly suggest specific areas for improvement.",
           language,
@@ -203,6 +204,12 @@ export default function Editor() {
             const parsed = JSON.parse(line);
             if (parsed.response) {
               setSupportResponse(prev => prev + parsed.response);
+            }
+            if (parsed.done) {
+              setLastGenerationMetrics({
+                tokens: parsed.eval_count || 0,
+                duration: (parsed.total_duration || 0) / 1e9 // Convert nanoseconds to seconds
+              });
             }
           } catch (e) {
             console.error(e);
@@ -255,7 +262,7 @@ export default function Editor() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model,
+          model: selectedModel?.name,
           prompt: promptContext,
           customPrompt,
           language,
@@ -294,6 +301,12 @@ export default function Editor() {
               } else {
                 setSupportResponse(prev => prev + parsed.response);
               }
+            }
+            if (parsed.done) {
+              setLastGenerationMetrics({
+                tokens: parsed.eval_count || 0,
+                duration: (parsed.total_duration || 0) / 1e9 // Convert nanoseconds to seconds
+              });
             }
           } catch (e) {
             console.error("Error parsing NDJSON chunk line:", line, e);
@@ -347,7 +360,7 @@ export default function Editor() {
               <Save className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
               Save JSON
             </button>
-            <ModelSelector value={model} onChange={setModel} />
+            <ModelSelector />
           </div>
         </div>
 
